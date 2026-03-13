@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>New Tab</title>
+    <link rel="stylesheet" href="search_bar.css">
+    <style>
+        .card {
+            width: 200px;
+            height: 200px;
+            background-color: #172030;
+            border-radius: 30px;
+            border: 1px solid #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: transform 0.2s ease, background-color 0.2s ease, border 0.2s ease;
+        }
+
+        .card:hover {
+            background-color: #252f42;
+            border-color: #555;
+            transform: translateY(-10px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .widget1 {
+            width: 300px;
+            height: 200px;
+        }
+
+        img {
+            width: 70px;
+            height: auto;
+        }
+        .circle {
+            width: 120px;
+            height: 120px;
+            background-color: #ffffff;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        body {
+        margin: 0;
+        padding: 0;
+        background: #333c4d;
+        /* background: linear-gradient(to bottom right, #191e27, #0d1117); */
+        font-family: Arial, sans-serif;
+        }
+        
+        #widget_container {
+        display: flex;
+        justify-content: center;
+        gap: 20px;
+        margin-top: 270px;
+        }
+        
+        #search {
+        height: 55px;
+        width: 700px;
+        padding-left: 14px;
+        border: 1px solid #333;
+        background: #172030;
+        position: fixed;
+        top: 170px;
+        left: 50%;
+        transform: translateX(-50%);
+        border-radius: 40px;
+        }
+        
+        #search:hover {
+        background-color: #252f42;
+        border-color: #555;
+        }
+        
+        input {
+        width: 100%;
+        height: 100%;
+        padding: 0 10px;
+        border: none;
+        background-color: transparent;
+        color: #fff;
+        font-size: 16px;
+        }
+        
+        input:focus {
+        outline: none;
+        }
+        
+        input::placeholder {
+        color: #ffffff;
+        }
+        
+        #suggestions{
+        position:absolute;
+        top:60px;
+        left:0;
+        right:0;
+        background:#172030;
+        border-radius:20px;
+        overflow:hidden;
+        border:1px solid #333;
+        opacity:0;
+        transform:translateY(-10px);
+        pointer-events:none;
+        transition:all 0.18s ease;
+        }
+        
+        #suggestions.show{
+        opacity:1;
+        transform:translateY(0);
+        pointer-events:auto;
+        }
+        
+        .suggestion{
+        padding:12px 16px;
+        color:white;
+        cursor:pointer;
+        display:flex;
+        align-items:center;
+        gap:10px;
+        font-size:15px;
+        }
+        
+        .suggestion strong{
+        color:#8ab4f8;
+        font-weight:600;
+        }
+        
+        .suggestion:hover,
+        .suggestion.active{
+        background:#252f42;
+        }
+        
+        .icon{
+        opacity:0.7;
+        }
+        
+        .card {
+            width: 200px;
+            height: 200px;
+            background-color: #172030;
+            border-radius: 30px;
+            border: 1px solid #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: transform 0.2s ease, background-color 0.2s ease, border 0.2s ease;
+        }
+        
+        .card:hover {
+            background-color: #252f42;
+            border-color: #555;
+            transform: translateY(-10px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .widget1 {
+            width: 300px;
+            height: 200px;
+        }
+        
+        img {
+            width: 70px;
+            height: auto;
+        }
+        .circle {
+            width: 120px;
+            height: 120px;
+            background-color: #ffffff;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+    </style>
+</head>
+<body>
+    <div id="search">
+        <input id="searchInput" type="text" placeholder="Search" autocomplete="off">
+        <div id="suggestions"></div>
+    </div>
+    <div id="widget_container">
+        <div class="widget1 card">
+
+        </div>
+        <a href="https://www.youtube.com">
+            <div class="widget2 card">
+                <div class="circle">
+                    <img src="Youtube_icon.ico">
+                </div>
+            </div>
+        </a>
+        <a href="https://www.github.com/SketchyBox415">
+            <div class="widget3 card">
+                <div class="circle">
+                    <img src="github_icon.ico">
+                </div>
+            </div>
+        </a>
+    </div>
+
+    <script>
+        const input = document.getElementById("searchInput");
+        const suggestionsBox = document.getElementById("suggestions");
+
+        let selectedIndex = -1;
+
+        window.handleSuggestions = function(data){
+
+        const suggestions = data[1];
+
+        if(!suggestions || suggestions.length === 0){
+        suggestionsBox.style.display="none";
+        return;
+        }
+
+        suggestionsBox.innerHTML = suggestions
+        .map(s => `<div class="suggestion">${s}</div>`)
+        .join("");
+
+        suggestionsBox.style.display="block";
+
+        document.querySelectorAll(".suggestion").forEach(item=>{
+        item.onclick = () => {
+        input.value = item.innerText;
+        search();
+        };
+        });
+
+        selectedIndex = -1;
+
+        }
+
+        function fetchSuggestions(){
+
+        const query = input.value.trim();
+
+        if(!query){
+        suggestionsBox.style.display="none";
+        return;
+        }
+
+        const oldScript=document.getElementById("suggestScript");
+        if(oldScript) oldScript.remove();
+
+        const script=document.createElement("script");
+        script.id="suggestScript";
+
+        script.src=`https://suggestqueries.google.com/complete/search?client=firefox&q=${encodeURIComponent(query)}&callback=handleSuggestions`;
+
+        document.body.appendChild(script);
+
+        }
+
+        let timer;
+
+        input.addEventListener("input",()=>{
+        clearTimeout(timer);
+        timer=setTimeout(fetchSuggestions,200);
+        });
+
+        input.addEventListener("keydown",(e)=>{
+
+        const items=document.querySelectorAll(".suggestion");
+
+        if(e.key==="ArrowDown"){
+        selectedIndex++;
+        if(selectedIndex>=items.length) selectedIndex=0;
+        updateSelection(items);
+        e.preventDefault();
+        }
+
+        else if(e.key==="ArrowUp"){
+        selectedIndex--;
+        if(selectedIndex<0) selectedIndex=items.length-1;
+        updateSelection(items);
+        e.preventDefault();
+        }
+
+        else if(e.key==="Enter"){
+        if(selectedIndex>-1){
+        input.value=items[selectedIndex].innerText;
+        }
+        search();
+        }
+
+        });
+
+        function updateSelection(items){
+
+        items.forEach(i=>i.classList.remove("active"));
+
+        if(selectedIndex>=0){
+        items[selectedIndex].classList.add("active");
+        input.value=items[selectedIndex].innerText;
+        }
+
+        }
+
+        function search(){
+        const query=input.value.trim();
+        if(query){
+        window.location.href="https://www.google.com/search?q="+encodeURIComponent(query);
+        }
+        }
+
+        document.addEventListener("click",(e)=>{
+        if(!input.contains(e.target) && !suggestionsBox.contains(e.target)){
+        suggestionsBox.style.display="none";
+        }
+        });
+    </script>
+</body>
+</html>
